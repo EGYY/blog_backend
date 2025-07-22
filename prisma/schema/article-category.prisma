@@ -1,0 +1,7 @@
+model ArticleCategory {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  articles  Article[]
+
+  @@map("article_category")
+}

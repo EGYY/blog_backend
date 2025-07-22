@@ -1,0 +1,26 @@
+model Article {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    title      String
+    subtitle   String
+    content    String
+    poster     String  @default("/uploads/no-poster.jpg")
+    published  Boolean @default(false)
+    likesCount Int     @default(0) @map("likes")
+    viewsCount Int     @default(0) @map("views")
+
+    author   User   @relation(fields: [authorId], references: [id])
+    authorId String
+
+    category   ArticleCategory @relation(fields: [categoryId], references: [id])
+    categoryId String
+
+    tags ArticleTag[] @relation("ArticleTags")
+
+    comments Comment[]
+    likes    Like[]
+
+    @@map("article")
+}

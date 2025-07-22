@@ -1,0 +1,14 @@
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId String
+
+  @@unique([userId, articleId])
+
+  @@map("like")
+}
