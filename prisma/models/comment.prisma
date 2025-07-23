@@ -1,15 +1,12 @@
 model Comment {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  content   String
+  authorId  String
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
 
-    content String
-
-    author   User   @relation(fields: [authorId], references: [id])
-    authorId String
-
-    article   Article @relation(fields: [articleId], references: [id])
-    articleId String
-
-    @@map("comment")
+  @@map("comment")
 }

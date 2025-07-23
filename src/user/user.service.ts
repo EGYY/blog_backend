@@ -20,7 +20,9 @@ export class UserService {
           select: {
             articles: true,
             comments: true,
-            likes: true
+            likes: true,
+            followers: true,
+            following: true,
           }
         },
         articles: {

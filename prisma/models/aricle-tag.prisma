@@ -1,7 +1,7 @@
 model ArticleTag {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  articles   Article[]   @relation("ArticleTags")
+  id       String    @id @default(cuid())
+  name     String    @unique
+  articles Article[] @relation("ArticleTags")
 
   @@map("article_tag")
 }

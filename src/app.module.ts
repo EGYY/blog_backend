@@ -9,6 +9,8 @@ import { ArticleModule } from './article/article.module';
 import { CommentModule } from './comment/comment.module';
 import { ArticleCategoryModule } from './article_category/article_category.module';
 import { ArticleTagModule } from './article_tag/article_tag.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ArticleTagModule } from './article_tag/article_tag.module';
     CommentModule,
     ArticleCategoryModule,
     ArticleTagModule,
+    SubscriptionsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

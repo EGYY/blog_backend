@@ -5,10 +5,15 @@ import { FileService } from 'src/file/file.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ArticleService {
-  constructor(private readonly prisma: PrismaService, private readonly fileService: FileService) { }
+  constructor(
+    private readonly prisma: PrismaService, 
+    private readonly fileService: FileService,
+    private readonly notificationsService: NotificationsService,
+  ) { }
 
   async create(authorId: string, dto: CreateArticleDto, poster?: Express.Multer.File) {
     let posterUrl: string | undefined = undefined
@@ -20,7 +25,8 @@ export class ArticleService {
         throw new BadRequestException('Ошибка при загрузке постера');
       }
     }
-    return this.prisma.article.create({
+    
+    const article = await this.prisma.article.create({
       data: {
         title: dto.title,
         subtitle: dto.subtitle,
@@ -33,6 +39,10 @@ export class ArticleService {
         },
       },
     });
+
+    await this.notificationsService.notifySubscribers(authorId, article.id, article.title);
+
+    return article
   }
 
   async findAll(query: QueryArticleDto) {

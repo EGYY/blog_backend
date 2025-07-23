@@ -1,0 +1,11 @@
+model Subscription {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  followerId  String
+  followingId String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  following   User     @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+  @@map("subscription")
+}
