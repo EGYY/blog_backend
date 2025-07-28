@@ -6,7 +6,7 @@ model Notification {
     message   String
     articleId String?
     article   Article? @relation(fields: [articleId], references: [id])
-    viewed  Boolean @default(false)
+    viewed    Boolean  @default(false)
 
     @@map("notification")
 }

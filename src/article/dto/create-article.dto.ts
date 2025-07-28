@@ -1,24 +1,23 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsArray, IsOptional, IsString } from "class-validator";
+import { transformToArray } from "./query-article.dto";
 
 export class CreateArticleDto {
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'Заголовок обязательное поле' })
     title: string;
 
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'Подзаголовок обязательное поле' })
     subtitle: string;
   
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'Текст статьи обязательное поле' })
     content: string;
 
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'ID категории обязательное поле' })
     categoryId: string;
 
+    @IsOptional()
+    @Transform(transformToArray)
     @IsArray()
     @IsString({ each: true })
-    @IsOptional()
     tagIds?: string[];
 }

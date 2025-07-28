@@ -28,7 +28,25 @@ export class NotificationsService {
     return this.prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      include: { article: true },
+      omit: { articleId: true, userId: true},
+      include: {
+        article: {
+          select: {
+            id: true,
+            title: true,
+            subtitle: true,
+            poster: true,
+            createdAt: true,
+          }
+        }, user: {
+          select: {
+            id: true,
+            avatar: true,
+            email: true,
+            name: true
+          }
+        }
+      },
     });
   }
 }

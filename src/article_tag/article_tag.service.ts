@@ -6,8 +6,10 @@ import { PrismaService } from 'src/prisma.service';
 @Injectable()
 export class ArticleTagService {
   constructor(private readonly prisma: PrismaService) { }
-  create(createArticleTagDto: CreateArticleTagDto) {
-    return 'This action adds a new articleTag';
+  
+  async create(createArticleTagDto: CreateArticleTagDto) {
+    const tag = await this.prisma.articleTag.create({ data: createArticleTagDto });
+    return tag;
   }
 
   async findAll() {

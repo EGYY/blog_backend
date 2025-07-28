@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
 import { FileService } from 'src/file/file.service';
@@ -10,7 +10,7 @@ import { NotificationsService } from 'src/notifications/notifications.service';
 @Injectable()
 export class ArticleService {
   constructor(
-    private readonly prisma: PrismaService, 
+    private readonly prisma: PrismaService,
     private readonly fileService: FileService,
     private readonly notificationsService: NotificationsService,
   ) { }
@@ -25,7 +25,7 @@ export class ArticleService {
         throw new BadRequestException('Ошибка при загрузке постера');
       }
     }
-    
+
     const article = await this.prisma.article.create({
       data: {
         title: dto.title,
@@ -57,7 +57,7 @@ export class ArticleService {
     } = query;
     const take = parseInt(limit);
     const skip = (parseInt(page) - 1) * take;
-  
+
     const where: Prisma.ArticleWhereInput = {
       published: true,
       ...(search && {
@@ -77,14 +77,14 @@ export class ArticleService {
         },
       }),
     };
-  
+
     const orderBy: Prisma.ArticleOrderByWithRelationInput =
       sortBy === 'likes'
         ? { likesCount: sort }
         : sortBy === 'views'
-        ? { viewsCount: sort }
-        : { createdAt: sort };
-  
+          ? { viewsCount: sort }
+          : { createdAt: sort };
+
     const [articles, total] = await Promise.all([
       this.prisma.article.findMany({
         where,
@@ -101,7 +101,7 @@ export class ArticleService {
       }),
       this.prisma.article.count({ where }),
     ]);
-  
+
     return {
       data: articles,
       total,
@@ -157,11 +157,11 @@ export class ArticleService {
 
     if (existing) {
       await this.prisma.like.delete({ where: { id: existing.id } });
-      await this.prisma.article.update({ where: { id: articleId }, data: {likesCount: {decrement: 1}} });
+      await this.prisma.article.update({ where: { id: articleId }, data: { likesCount: { decrement: 1 } } });
       return { liked: false };
     } else {
       await this.prisma.like.create({ data: { userId, articleId } });
-      await this.prisma.article.update({ where: { id: articleId }, data: {likesCount: {increment: 1}} });
+      await this.prisma.article.update({ where: { id: articleId }, data: { likesCount: { increment: 1 } } });
       return { liked: true };
     }
   }
@@ -184,13 +184,18 @@ export class ArticleService {
     if (!post) {
       throw new BadRequestException('Такой статьи не существует');
     }
-    await this.prisma.article.update({ where: { id }, data: {viewsCount: {increment: 1}} });
+    await this.prisma.article.update({ where: { id }, data: { viewsCount: { increment: 1 } } });
     return post;
   }
 
-  async update(id: string, dto: UpdateArticleDto, poster?: Express.Multer.File) {
+  async update(id: string, userId: string, dto: UpdateArticleDto, poster?: Express.Multer.File) {
     const article = await this.findOne(id);
     if (!article) throw new NotFoundException(`Статья с id:${id} не найдена`);
+
+    const isArticleAuthor = article.author.id === userId;
+    const isAdmin = article.author.role === 'ADMIN';
+    if (!isArticleAuthor && !isAdmin) throw new UnauthorizedException('У вас нет прав на редактирование этой статьи');
+
     let posterUrl: string | undefined = undefined
     if (poster) {
       try {
@@ -200,6 +205,8 @@ export class ArticleService {
         throw new BadRequestException('Ошибка при загрузке постера');
       }
     }
+
+    console.log(dto.tagIds)
     return this.prisma.article.update({
       where: { id },
       data: {
@@ -210,18 +217,22 @@ export class ArticleService {
         categoryId: dto.categoryId,
         tags: dto.tagIds
           ? {
-              set: [],
-              connect: dto.tagIds.map((id) => ({ id })),
-            }
+            set: [],
+            connect: dto.tagIds.map((id) => ({ id })),
+          }
           : undefined,
       },
       include: { category: true, tags: true },
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const article = await this.findOne(id);
     if (!article) throw new NotFoundException(`Статья с id:${id} не найдена`);
+    const isArticleAuthor = article.author.id === userId;
+    const isAdmin = article.author.role === 'ADMIN';
+    if (!isArticleAuthor && !isAdmin) throw new UnauthorizedException('У вас нет прав для удаления этой статьи');
     return this.prisma.article.delete({ where: { id } });
   }
+
 }
