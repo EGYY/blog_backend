@@ -17,7 +17,7 @@ export class SubscriptionsController {
   @HttpCode(200)
   @Auth()
   @Delete('unsubscribe/:authorId')
-  async unsubscribe(@CurrentUser() userId: string, @Param('authorId') authorId: string) {
+  async unsubscribe(@CurrentUser('id') userId: string, @Param('authorId') authorId: string) {
     return this.subscriptionsService.unsubscribe(userId, authorId);
   }
 

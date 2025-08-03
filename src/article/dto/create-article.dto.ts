@@ -20,4 +20,7 @@ export class CreateArticleDto {
     @IsArray()
     @IsString({ each: true })
     tagIds?: string[];
+
+    @IsOptional()
+    published: boolean;
 }

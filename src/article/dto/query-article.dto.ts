@@ -51,4 +51,8 @@ export class QueryArticleDto {
   @IsArray()
   @IsString({ each: true })
   tagIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  authorId?: string;
 }

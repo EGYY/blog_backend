@@ -4,6 +4,7 @@ import { CurrentUser } from './decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { OptionalAuth } from 'src/auth/decorators/optional-auth.decorator';
 
 @Controller('users')
 export class UserController {
@@ -38,8 +39,9 @@ export class UserController {
   }
 
   @HttpCode(200)
+  @OptionalAuth()
   @Get('profile/:id')
-  async getUserProfile(@Param('id') id: string) {
-    return this.userService.getById(id);
+  async getUserProfile(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.userService.getById(id, userId);
   }
 }

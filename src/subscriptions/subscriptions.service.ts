@@ -5,16 +5,16 @@ import { PrismaService } from 'src/prisma.service';
 export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async subscribe(followerId: string, followingId: string) {
-    if (followerId === followingId) {
+  async subscribe(userId: string, authorId: string) {
+    if (userId === authorId) {
       throw new ConflictException('Вы не можете подписаться сами на себя');
     }
 
     const existingSubscription = await this.prisma.subscription.findUnique({
       where: {
         followerId_followingId: {
-          followerId,
-          followingId,
+          followerId: authorId,
+          followingId: userId,
         },
       },
     });
@@ -25,8 +25,8 @@ export class SubscriptionsService {
 
     return this.prisma.subscription.create({
       data: {
-        followerId,
-        followingId,
+        followerId: authorId,
+        followingId: userId,
       },
       include: {
         following: {
@@ -36,12 +36,12 @@ export class SubscriptionsService {
     });
   }
 
-  async unsubscribe(followerId: string, followingId: string) {
+  async unsubscribe(userId: string, authorId: string) {
     const subscription = await this.prisma.subscription.findUnique({
       where: {
         followerId_followingId: {
-          followerId,
-          followingId,
+          followerId: authorId,
+          followingId: userId,
         },
       },
     });
@@ -53,8 +53,8 @@ export class SubscriptionsService {
     return this.prisma.subscription.delete({
       where: {
         followerId_followingId: {
-          followerId,
-          followingId,
+          followerId: authorId,
+          followingId: userId,
         },
       },
     });
@@ -62,7 +62,7 @@ export class SubscriptionsService {
 
   async getFollowers(userId: string) {
     return this.prisma.subscription.findMany({
-      where: { followingId: userId },
+      where: { followerId: userId },
       include: {
         follower: {
           select: { id: true, name: true, email: true, avatar: true },
@@ -73,7 +73,7 @@ export class SubscriptionsService {
 
   async getFollowing(userId: string) {
     return this.prisma.subscription.findMany({
-      where: { followerId: userId },
+      where: { followingId: userId },
       include: {
         following: {
           select: { id: true, name: true, email: true, avatar: true },

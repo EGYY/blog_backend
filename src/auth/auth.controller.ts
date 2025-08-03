@@ -52,10 +52,14 @@ export class AuthController {
       this.authService.removeRefreshTokenFromResponse(res);
       throw new UnauthorizedException('Не валидный refresh токен');
     }
-    const { refreshToken, ...response } = await this.authService.getNewTokens(
+    const response = await this.authService.getNewTokens(
       refreshTokenFromCookies,
     );
-    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    if (response?.refreshToken) {
+      const {refreshToken, ...responseWithoutToken} = response;
+      this.authService.addRefreshTokenToResponse(res, response.refreshToken);
+      return responseWithoutToken
+    }
     return response;
   }
 

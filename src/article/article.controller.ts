@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, UsePipes, ValidationPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, UsePipes, ValidationPipe, BadRequestException, UseGuards, Req } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
@@ -7,6 +7,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ValidationError } from 'class-validator';
+import { OptionalAuth } from 'src/auth/decorators/optional-auth.decorator';
 
 @Controller('articles')
 export class ArticleController {
@@ -17,13 +18,11 @@ export class ArticleController {
     whitelist: true,
     exceptionFactory: (errors: ValidationError[]) => {
       const formattedErrors = {};
-      console.log(errors)
       errors.forEach((error) => {
         if (error.constraints) {
-          formattedErrors[error.property] = Object.values(error.constraints)[0]; // Берем только первое сообщение
+          formattedErrors[error.property] = Object.values(error.constraints)[0];
         }
       });
-      console.log('formated', formattedErrors)
       return new BadRequestException({
         statusCode: 400,
         message: 'Validation failed',
@@ -51,6 +50,7 @@ export class ArticleController {
   ) {
     return this.articleService.create(userId, createPostDto, poster);
   }
+  
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(200)
   @Get()
@@ -71,9 +71,10 @@ export class ArticleController {
     return this.articleService.toggleLike(postId, userId);
   }
 
+  @OptionalAuth()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articleService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser('id') userId: string | undefined) {
+    return this.articleService.findOne(id, userId);
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))

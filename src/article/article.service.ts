@@ -6,6 +6,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { subscribe } from 'diagnostics_channel';
 
 @Injectable()
 export class ArticleService {
@@ -37,6 +38,7 @@ export class ArticleService {
         tags: {
           connect: dto.tagIds?.map((id) => ({ id })) || [],
         },
+        published: Boolean(dto.published)
       },
     });
 
@@ -54,18 +56,20 @@ export class ArticleService {
       sortBy = 'date',
       categoryIds,
       tagIds,
+      authorId,
     } = query;
     const take = parseInt(limit);
     const skip = (parseInt(page) - 1) * take;
 
     const where: Prisma.ArticleWhereInput = {
-      published: true,
       ...(search && {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
           { content: { contains: search, mode: 'insensitive' } },
         ],
       }),
+      ...(!authorId && {published: true}),
+      ...(authorId && {authorId}),
       ...(categoryIds?.length && {
         categoryId: { in: categoryIds },
       }),
@@ -166,7 +170,7 @@ export class ArticleService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const post = await this.prisma.article.findUnique({
       where: { id },
       include: {
@@ -184,8 +188,26 @@ export class ArticleService {
     if (!post) {
       throw new BadRequestException('Такой статьи не существует');
     }
+    const subscribed = await this.prisma.subscription.findFirst({
+      where: {
+        followerId: post.author.id,
+        followingId: userId
+      },
+    });
+
+    const liked = await this.prisma.like.findFirst({
+      where: {
+        userId,
+        articleId: id
+      },
+    });
+
     await this.prisma.article.update({ where: { id }, data: { viewsCount: { increment: 1 } } });
-    return post;
+    return {
+      ...post,
+      ...(subscribed && {subscribed: Boolean(subscribed)}),
+      ...(liked && { liked: Boolean(liked) }),
+    };
   }
 
   async update(id: string, userId: string, dto: UpdateArticleDto, poster?: Express.Multer.File) {
@@ -206,7 +228,6 @@ export class ArticleService {
       }
     }
 
-    console.log(dto.tagIds)
     return this.prisma.article.update({
       where: { id },
       data: {
@@ -215,6 +236,7 @@ export class ArticleService {
         content: dto.content,
         poster: posterUrl,
         categoryId: dto.categoryId,
+        published: Boolean(dto.published),
         tags: dto.tagIds
           ? {
             set: [],
@@ -234,5 +256,4 @@ export class ArticleService {
     if (!isArticleAuthor && !isAdmin) throw new UnauthorizedException('У вас нет прав для удаления этой статьи');
     return this.prisma.article.delete({ where: { id } });
   }
-
 }

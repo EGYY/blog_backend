@@ -9,7 +9,13 @@ import { FileService } from 'src/file/file.service';
 export class UserService {
   constructor(private readonly prisma: PrismaService, private readonly fileService: FileService) { }
 
-  async getById(id: string) {
+  async getById(id: string, subscriberId?: string) {
+    const subscribed = await this.prisma.subscription.findFirst({
+      where: {
+        followerId: id,
+        followingId: subscriberId
+      },
+    });
     const user = await this.prisma.user.findUnique({
       where: { id },
       omit: {
@@ -33,6 +39,9 @@ export class UserService {
         }
       }
     });
+    if (subscribed) {
+      return {...user, subscribed: Boolean(subscribed)}
+    }
     return user;
   }
 

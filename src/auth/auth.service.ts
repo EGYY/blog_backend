@@ -43,8 +43,10 @@ export class AuthService {
     const result = await this.jwt.verifyAsync(refreshToken);
     if (!result) throw new UnauthorizedException('Невалидный refresh токен');
     const user = await this.userSerivce.getById(result.id);
-    const tokens = this.generateTokens(user!.id);
-    return { user, ...tokens };
+    if (user?.id) {
+      const tokens = this.generateTokens(user.id);
+      return { user, ...tokens };
+    }
   }
 
   generateTokens(userId: string) {

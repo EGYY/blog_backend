@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from 'src/user/user.module';
@@ -9,10 +9,11 @@ import { UserService } from 'src/user/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaService } from 'src/prisma.service';
 import { FileService } from 'src/file/file.service';
+import { OptionalAuthGuard } from './guards/optional-auth.guard';
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -27,6 +28,8 @@ import { FileService } from 'src/file/file.service';
     UserService,
     JwtStrategy,
     FileService,
+    OptionalAuthGuard,
   ],
+  exports: [JwtModule, OptionalAuthGuard]
 })
 export class AuthModule {}
