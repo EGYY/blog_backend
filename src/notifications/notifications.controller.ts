@@ -1,8 +1,7 @@
-import { Controller, Get, HttpCode} from '@nestjs/common';
+import { Controller, Get, HttpCode } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-
 
 @Controller('notifications')
 export class NotificationsController {
@@ -13,7 +12,5 @@ export class NotificationsController {
   @Get()
   async getNotifications(@CurrentUser('id') userId: string) {
     return this.notificationsService.getUserNotifications(userId);
-
   }
 }
- 

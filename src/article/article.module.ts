@@ -8,10 +8,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
-    forwardRef(() => AuthModule),
-    ConfigModule,
-  ],
+  imports: [forwardRef(() => AuthModule), ConfigModule],
   controllers: [ArticleController],
   providers: [ArticleService, PrismaService, FileService, NotificationsService],
 })

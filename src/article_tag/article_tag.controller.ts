@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+} from '@nestjs/common';
 import { ArticleTagService } from './article_tag.service';
 import { CreateArticleTagDto } from './dto/create-article_tag.dto';
-import { UpdateArticleTagDto } from './dto/update-article_tag.dto';
 
 @Controller('article-tags')
 export class ArticleTagController {
@@ -24,8 +32,8 @@ export class ArticleTagController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleTagDto: UpdateArticleTagDto) {
-    return this.articleTagService.update(+id, updateArticleTagDto);
+  update(@Param('id') id: string) {
+    return this.articleTagService.update(+id);
   }
 
   @Delete(':id')

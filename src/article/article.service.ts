@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
 import { FileService } from 'src/file/file.service';
@@ -6,7 +12,6 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { subscribe } from 'diagnostics_channel';
 
 @Injectable()
 export class ArticleService {
@@ -14,15 +19,22 @@ export class ArticleService {
     private readonly prisma: PrismaService,
     private readonly fileService: FileService,
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
-  async create(authorId: string, dto: CreateArticleDto, poster?: Express.Multer.File) {
-    let posterUrl: string | undefined = undefined
+  async create(
+    authorId: string,
+    dto: CreateArticleDto,
+    poster?: Express.Multer.File,
+  ) {
+    let posterUrl: string | undefined = undefined;
     if (poster) {
       try {
-        const [fileResponse] = await this.fileService.saveFiles([poster], 'posters');
+        const [fileResponse] = await this.fileService.saveFiles(
+          [poster],
+          'posters',
+        );
         posterUrl = fileResponse.url;
-      } catch (e) {
+      } catch {
         throw new BadRequestException('Ошибка при загрузке постера');
       }
     }
@@ -38,13 +50,17 @@ export class ArticleService {
         tags: {
           connect: dto.tagIds?.map((id) => ({ id })) || [],
         },
-        published: Boolean(dto.published)
+        published: Boolean(dto.published),
       },
     });
 
-    await this.notificationsService.notifySubscribers(authorId, article.id, article.title);
+    await this.notificationsService.notifySubscribers(
+      authorId,
+      article.id,
+      article.title,
+    );
 
-    return article
+    return article;
   }
 
   async findAll(query: QueryArticleDto) {
@@ -68,8 +84,8 @@ export class ArticleService {
           { content: { contains: search, mode: 'insensitive' } },
         ],
       }),
-      ...(!authorId && {published: true}),
-      ...(authorId && {authorId}),
+      ...(!authorId && { published: true }),
+      ...(authorId && { authorId }),
       ...(categoryIds?.length && {
         categoryId: { in: categoryIds },
       }),
@@ -127,7 +143,7 @@ export class ArticleService {
       throw new NotFoundException('Статья не найдена');
     }
 
-    const tagIds = article.tags.map(tag => tag.id);
+    const tagIds = article.tags.map((tag) => tag.id);
 
     const relatedArticles = await this.prisma.article.findMany({
       where: {
@@ -138,9 +154,7 @@ export class ArticleService {
           { tags: { some: { id: { in: tagIds } } } },
         ],
       },
-      orderBy: [
-        { viewsCount: 'desc' },
-      ],
+      orderBy: [{ viewsCount: 'desc' }],
       take: limit,
       include: {
         author: true,
@@ -161,11 +175,17 @@ export class ArticleService {
 
     if (existing) {
       await this.prisma.like.delete({ where: { id: existing.id } });
-      await this.prisma.article.update({ where: { id: articleId }, data: { likesCount: { decrement: 1 } } });
+      await this.prisma.article.update({
+        where: { id: articleId },
+        data: { likesCount: { decrement: 1 } },
+      });
       return { liked: false };
     } else {
       await this.prisma.like.create({ data: { userId, articleId } });
-      await this.prisma.article.update({ where: { id: articleId }, data: { likesCount: { increment: 1 } } });
+      await this.prisma.article.update({
+        where: { id: articleId },
+        data: { likesCount: { increment: 1 } },
+      });
       return { liked: true };
     }
   }
@@ -176,14 +196,14 @@ export class ArticleService {
       include: {
         author: {
           omit: {
-            password: true
-          }
+            password: true,
+          },
         },
         tags: true,
       },
       omit: {
-        authorId: true
-      }
+        authorId: true,
+      },
     });
     if (!post) {
       throw new BadRequestException('Такой статьи не существует');
@@ -191,39 +211,53 @@ export class ArticleService {
     const subscribed = await this.prisma.subscription.findFirst({
       where: {
         followerId: post.author.id,
-        followingId: userId
+        followingId: userId,
       },
     });
 
     const liked = await this.prisma.like.findFirst({
       where: {
         userId,
-        articleId: id
+        articleId: id,
       },
     });
 
-    await this.prisma.article.update({ where: { id }, data: { viewsCount: { increment: 1 } } });
+    await this.prisma.article.update({
+      where: { id },
+      data: { viewsCount: { increment: 1 } },
+    });
     return {
       ...post,
-      ...(subscribed && {subscribed: Boolean(subscribed)}),
+      ...(subscribed && { subscribed: Boolean(subscribed) }),
       ...(liked && { liked: Boolean(liked) }),
     };
   }
 
-  async update(id: string, userId: string, dto: UpdateArticleDto, poster?: Express.Multer.File) {
+  async update(
+    id: string,
+    userId: string,
+    dto: UpdateArticleDto,
+    poster?: Express.Multer.File,
+  ) {
     const article = await this.findOne(id);
     if (!article) throw new NotFoundException(`Статья с id:${id} не найдена`);
 
     const isArticleAuthor = article.author.id === userId;
     const isAdmin = article.author.role === 'ADMIN';
-    if (!isArticleAuthor && !isAdmin) throw new UnauthorizedException('У вас нет прав на редактирование этой статьи');
+    if (!isArticleAuthor && !isAdmin)
+      throw new UnauthorizedException(
+        'У вас нет прав на редактирование этой статьи',
+      );
 
-    let posterUrl: string | undefined = undefined
+    let posterUrl: string | undefined = undefined;
     if (poster) {
       try {
-        const [fileResponse] = await this.fileService.saveFiles([poster], 'posters');
+        const [fileResponse] = await this.fileService.saveFiles(
+          [poster],
+          'posters',
+        );
         posterUrl = fileResponse.url;
-      } catch (e) {
+      } catch {
         throw new BadRequestException('Ошибка при загрузке постера');
       }
     }
@@ -239,9 +273,9 @@ export class ArticleService {
         published: Boolean(dto.published),
         tags: dto.tagIds
           ? {
-            set: [],
-            connect: dto.tagIds.map((id) => ({ id })),
-          }
+              set: [],
+              connect: dto.tagIds.map((id) => ({ id })),
+            }
           : undefined,
       },
       include: { category: true, tags: true },
@@ -253,7 +287,10 @@ export class ArticleService {
     if (!article) throw new NotFoundException(`Статья с id:${id} не найдена`);
     const isArticleAuthor = article.author.id === userId;
     const isAdmin = article.author.role === 'ADMIN';
-    if (!isArticleAuthor && !isAdmin) throw new UnauthorizedException('У вас нет прав для удаления этой статьи');
+    if (!isArticleAuthor && !isAdmin)
+      throw new UnauthorizedException(
+        'У вас нет прав для удаления этой статьи',
+      );
     return this.prisma.article.delete({ where: { id } });
   }
 }

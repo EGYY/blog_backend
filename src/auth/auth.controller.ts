@@ -46,7 +46,9 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const refreshTokenFromCookies =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       req.cookies[this.authService.REFRESH_TOKEN_NAME];
     if (!refreshTokenFromCookies) {
       this.authService.removeRefreshTokenFromResponse(res);
@@ -56,16 +58,16 @@ export class AuthController {
       refreshTokenFromCookies,
     );
     if (response?.refreshToken) {
-      const {refreshToken, ...responseWithoutToken} = response;
-      this.authService.addRefreshTokenToResponse(res, response.refreshToken);
-      return responseWithoutToken
+      const { refreshToken, ...responseWithoutToken } = response;
+      this.authService.addRefreshTokenToResponse(res, refreshToken);
+      return responseWithoutToken;
     }
     return response;
   }
 
   @HttpCode(200)
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response) {
     this.authService.removeRefreshTokenFromResponse(res);
     return true;
   }

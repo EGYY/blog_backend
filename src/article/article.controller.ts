@@ -1,4 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, UsePipes, ValidationPipe, BadRequestException, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
+} from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
@@ -11,25 +29,29 @@ import { OptionalAuth } from 'src/auth/decorators/optional-auth.decorator';
 
 @Controller('articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) { }
+  constructor(private readonly articleService: ArticleService) {}
 
-  @UsePipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    exceptionFactory: (errors: ValidationError[]) => {
-      const formattedErrors = {};
-      errors.forEach((error) => {
-        if (error.constraints) {
-          formattedErrors[error.property] = Object.values(error.constraints)[0];
-        }
-      });
-      return new BadRequestException({
-        statusCode: 400,
-        message: 'Validation failed',
-        errors: formattedErrors,
-      });
-    },
-  }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const formattedErrors = {};
+        errors.forEach((error) => {
+          if (error.constraints) {
+            formattedErrors[error.property] = Object.values(
+              error.constraints,
+            )[0];
+          }
+        });
+        return new BadRequestException({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: formattedErrors,
+        });
+      },
+    }),
+  )
   @HttpCode(200)
   @Auth()
   @Post()
@@ -41,7 +63,7 @@ export class ArticleController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
         ],
         fileIsRequired: false,
       }),
@@ -50,7 +72,7 @@ export class ArticleController {
   ) {
     return this.articleService.create(userId, createPostDto, poster);
   }
-  
+
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(200)
   @Get()
@@ -73,7 +95,10 @@ export class ArticleController {
 
   @OptionalAuth()
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser('id') userId: string | undefined) {
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string | undefined,
+  ) {
     return this.articleService.findOne(id, userId);
   }
 
@@ -90,7 +115,7 @@ export class ArticleController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
         ],
         fileIsRequired: false,
       }),

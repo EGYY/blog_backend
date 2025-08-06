@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, IsNumberString, IsEnum, IsUUID, IsArray, ArrayNotEmpty } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumberString,
+  IsEnum,
+  IsArray,
+} from 'class-validator';
 
 export enum SortOrder {
   asc = 'asc',
@@ -9,15 +15,14 @@ export enum SortOrder {
 export enum SortBy {
   date = 'date',
   likes = 'likes',
-  views = 'views'
+  views = 'views',
 }
 
-export const transformToArray = ({ value }) => {
-  if (Array.isArray(value)) return value;
+export const transformToArray = ({ value }): string[] => {
+  if (Array.isArray(value)) return value as string[];
   if (typeof value === 'string') return value.split(',').map((v) => v.trim());
-  return [];
+  return [] as string[];
 };
-
 
 export class QueryArticleDto {
   @IsOptional()

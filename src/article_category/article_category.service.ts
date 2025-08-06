@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArticleCategoryDto } from './dto/create-article_category.dto';
-import { UpdateArticleCategoryDto } from './dto/update-article_category.dto';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ArticleCategoryService {
-  constructor(private readonly prisma: PrismaService) { }
-  
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createArticleCategoryDto: CreateArticleCategoryDto) {
-    const category = await this.prisma.articleCategory.create({ data: createArticleCategoryDto });
+    const category = await this.prisma.articleCategory.create({
+      data: createArticleCategoryDto,
+    });
     return category;
   }
 
@@ -21,7 +22,7 @@ export class ArticleCategoryService {
     return `This action returns a #${id} articleCategory`;
   }
 
-  update(id: number, updateArticleCategoryDto: UpdateArticleCategoryDto) {
+  update(id: number) {
     return `This action updates a #${id} articleCategory`;
   }
 

@@ -3,9 +3,13 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-  async notifySubscribers(authorId: string, articleId: string, articleTitle: string) {
+  async notifySubscribers(
+    authorId: string,
+    articleId: string,
+    articleTitle: string,
+  ) {
     const subscriptions = await this.prisma.subscription.findMany({
       where: { followingId: authorId },
       select: { followerId: true },
@@ -28,7 +32,7 @@ export class NotificationsService {
     return this.prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      omit: { articleId: true, userId: true},
+      omit: { articleId: true, userId: true },
       include: {
         article: {
           select: {
@@ -37,15 +41,16 @@ export class NotificationsService {
             subtitle: true,
             poster: true,
             createdAt: true,
-          }
-        }, user: {
+          },
+        },
+        user: {
           select: {
             id: true,
             avatar: true,
             email: true,
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
     });
   }

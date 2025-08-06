@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  Query,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -7,7 +17,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('comments')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) { }
+  constructor(private readonly commentService: CommentService) {}
 
   @HttpCode(200)
   @Auth()
@@ -25,7 +35,12 @@ export class CommentController {
   ) {
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
-    return this.commentService.findAllByArticle(articleId, pageNum, limitNum, order);
+    return this.commentService.findAllByArticle(
+      articleId,
+      pageNum,
+      limitNum,
+      order,
+    );
   }
 
   @HttpCode(200)

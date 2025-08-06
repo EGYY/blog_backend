@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -34,13 +35,14 @@ export class AuthService {
       throw new BadRequestException(
         `Пользователь с такой почтой уже существует`,
       );
-    const {password, ...newUser} = await this.userSerivce.create(dto);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...newUser } = await this.userSerivce.create(dto);
     const tokens = this.generateTokens(newUser.id);
     return { user: newUser, ...tokens };
   }
 
   async getNewTokens(refreshToken: string) {
-    const result = await this.jwt.verifyAsync(refreshToken);
+    const result = await this.jwt.verifyAsync<User>(refreshToken);
     if (!result) throw new UnauthorizedException('Невалидный refresh токен');
     const user = await this.userSerivce.getById(result.id);
     if (user?.id) {
@@ -64,7 +66,7 @@ export class AuthService {
     const user = await this.userSerivce.getByEmail(dto.email);
 
     if (!user) throw new NotFoundException('Пользователь не найден');
-    const isPasswordValid = await verify(user.password!, dto.password);
+    const isPasswordValid = await verify(user.password, dto.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Неверный пароль');
     }

@@ -30,6 +30,6 @@ import { OptionalAuthGuard } from './guards/optional-auth.guard';
     FileService,
     OptionalAuthGuard,
   ],
-  exports: [JwtModule, OptionalAuthGuard]
+  exports: [JwtModule, OptionalAuthGuard],
 })
 export class AuthModule {}

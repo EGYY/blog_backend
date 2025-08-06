@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArticleTagDto } from './dto/create-article_tag.dto';
-import { UpdateArticleTagDto } from './dto/update-article_tag.dto';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ArticleTagService {
-  constructor(private readonly prisma: PrismaService) { }
-  
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createArticleTagDto: CreateArticleTagDto) {
-    const tag = await this.prisma.articleTag.create({ data: createArticleTagDto });
+    const tag = await this.prisma.articleTag.create({
+      data: createArticleTagDto,
+    });
     return tag;
   }
 
@@ -21,7 +22,7 @@ export class ArticleTagService {
     return `This action returns a #${id} articleTag`;
   }
 
-  update(id: number, updateArticleTagDto: UpdateArticleTagDto) {
+  update(id: number) {
     return `This action updates a #${id} articleTag`;
   }
 

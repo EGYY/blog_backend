@@ -1,4 +1,16 @@
-import { Body, Controller, FileTypeValidator, Get, HttpCode, MaxFileSizeValidator, Param, ParseFilePipe, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  FileTypeValidator,
+  Get,
+  HttpCode,
+  MaxFileSizeValidator,
+  Param,
+  ParseFilePipe,
+  Patch,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CurrentUser } from './decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -8,7 +20,7 @@ import { OptionalAuth } from 'src/auth/decorators/optional-auth.decorator';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @HttpCode(200)
   @Auth()
@@ -28,7 +40,7 @@ export class UserController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
         ],
         fileIsRequired: false,
       }),
@@ -41,7 +53,10 @@ export class UserController {
   @HttpCode(200)
   @OptionalAuth()
   @Get('profile/:id')
-  async getUserProfile(@Param('id') id: string, @CurrentUser('id') userId: string) {
+  async getUserProfile(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.userService.getById(id, userId);
   }
 }
